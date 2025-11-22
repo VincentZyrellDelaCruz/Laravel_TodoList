@@ -1,0 +1,108 @@
+@extends('layouts.app')
+
+@section('title')
+    <title>Todo List</title>
+@endsection
+
+@section('content')
+    <h1 class="fw-bolder mb-4">Todo List</h1>
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endisset
+
+    <div class="d-flex mb-3">
+        <div class="bg-light ps-3 border border-dark rounded-5 d-flex flex-row">
+            <form action="{{ route('todo.search') }}" class="d-flex align-items-center gap-2">
+                <input type="text" name="search_name" class="form-control bg-transparent border-0" placeholder="Search Todo Item">
+                <button type="submit" class="btn border-0"><i class="bi bi-search fs-5"></i></button>
+            </form>
+        </div>
+        <a href="{{ route('todo.create') }}" class="btn btn-success ms-auto d-flex align-items-center rounded-5 px-4 py-2 fw-bold">+ Add New Task</a>
+    </div>
+
+    <p class="fs-5"><b>Total:</b> {{ $todo_list->count() }}</p>
+
+
+    <div class="row d-flex align-items-center fw-bold fs-5 px-3">
+        <div class="col-md-1">
+            <p class="">Id</p>
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+            <p class="">Tasks</p>
+        </div>
+        <div class="col-md-1 d-flex justify-content-center">
+            <p class="">Priority</p>
+        </div>
+        <div class="col-md-2 d-flex justify-content-center">
+            <p class="">Status</p>
+        </div>
+        <div class="col-md-2 d-flex justify-content-center">
+            <p class="">Deadline</p>
+        </div>
+        <div class="col-md-2">
+            <p class="">Action</p>
+        </div>
+    </div>
+
+    <hr>
+
+    @if($todo_list->isEmpty())
+
+        <div class="p-3 border shadow rounded-4 d-flex align-items-center justify-content-center">
+            <p class="fs-5 fw-bold">The list is currently empty</p>
+        </div>
+
+    @else
+
+        <ul class="list-unstyled">
+            @foreach ($todo_list  as $task)
+                <li class="p-3 border shadow rounded-4 mb-3">
+                    <div class="row d-flex align-items-center">
+                        <div class="col-md-1">
+                            <p class="mb-auto fs-5">{{ $task->id }}</p>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center">
+                            <p class="mb-auto fs-5">{{ $task->task_name }}</p>
+                        </div>
+                        <div class="col-md-1 d-flex justify-content-center">
+                            <p class="{{ $task->priority === 'High' ? 'bg-danger' : ($task->priority === 'Medium' ? 'bg-warning' : 'bg-primary') }}
+                                text-white rounded-5 fw-bold px-3 py-1 mb-auto">{{ $task->priority }}</p>
+                        </div>
+                        <div class="col-md-2 d-flex justify-content-center">
+                            <p class="{{ $task->status === 'In Progress' ? 'bg-warning' : 'bg-success' }}
+                                text-white rounded-5 fw-bold px-3 py-1 mb-auto">{{ $task->status }}</p>
+                        </div>
+                        <div class="col-md-2 d-flex justify-content-center">
+                            <p class="mb-auto fs-5">{{ $task->deadline }}</p>
+                        </div>
+                        <div class="col-md-2 d-flex gap-3">
+                            @if ($task->status === 'In Progress')
+                                <form action="{{ route('todo.check', ['id' => $task->id]) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Check to complete"><i class="bi bi-check-lg text-success fs-5"></i></button>
+                                </form>
+                            @endif
+
+                            <a href="{{ route('todo.edit', ['todo' => $task->id]) }}" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Update"><i class="bi bi-pencil fs-5"></i></a>
+
+                            <form action="{{ route('todo.destroy', ['todo' => $task->id]) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <input type="hidden" name="isPermanent" value="false">
+                                <button type="submit" class="btn" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Delete"><i class="bi bi-trash-fill text-danger fs-5"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+
+    @endif
+@endsection
+
+
